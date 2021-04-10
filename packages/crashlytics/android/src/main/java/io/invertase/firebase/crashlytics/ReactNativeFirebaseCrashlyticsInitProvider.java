@@ -67,6 +67,23 @@ public class ReactNativeFirebaseCrashlyticsInitProvider extends ReactNativeFireb
     return enabled;
   }
 
+  static boolean isCrashlyticsJavascriptExceptionHandlerChainingEnabled() {
+    boolean enabled;
+    ReactNativeFirebaseJSON json = ReactNativeFirebaseJSON.getSharedInstance();
+    ReactNativeFirebaseMeta meta = ReactNativeFirebaseMeta.getSharedInstance();
+    ReactNativeFirebasePreferences prefs = ReactNativeFirebasePreferences.getSharedInstance();
+
+    if (prefs.contains(KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED)) {
+      enabled = prefs.getBooleanValue(KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED, true);
+    } else if (json.contains(KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED)) {
+      enabled = json.getBooleanValue(KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED, true);
+    } else {
+      enabled = meta.getBooleanValue(KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED, true);
+    }
+
+    return enabled;
+  }
+
   @Override
   public boolean onCreate() {
     super.onCreate();

@@ -53,6 +53,19 @@ public class ReactNativeFirebaseCrashlyticsModule extends ReactNativeFirebaseMod
   }
 
   @ReactMethod
+  public void crashWithStackPromise(ReadableMap jsErrorMap, Promise promise) {
+    if (ReactNativeFirebaseCrashlyticsInitProvider.isCrashlyticsCollectionEnabled()) {
+      Exception e = recordJavaScriptError(jsErrorMap);
+      e.printStackTrace(System.err);
+      System.err.println("@react-native-firebaes/crashlytics - Crash logged. Terminating app.");
+      System.exit(0);
+    } else {
+      System.err.println("isCrashlyticsCollectionEnabled is false. Crashlytics will not receive a report.");
+    }
+    promise.resolve(null);
+  }
+
+  @ReactMethod
   public void crash() {
     if (ReactNativeFirebaseCrashlyticsInitProvider.isCrashlyticsCollectionEnabled()) {
       // async task so as not to get caught by the React Native redbox handler in debug
@@ -62,6 +75,8 @@ public class ReactNativeFirebaseCrashlyticsModule extends ReactNativeFirebaseMod
           throw new RuntimeException("Crash Test");
         }
       }, 50);
+    } else {
+      System.err.println("isCrashlyticsCollectionEnabled is false. Crashlytics will not receive a report.");
     }
   }
 
@@ -141,6 +156,8 @@ public class ReactNativeFirebaseCrashlyticsModule extends ReactNativeFirebaseMod
   public void recordError(ReadableMap jsErrorMap) {
     if (ReactNativeFirebaseCrashlyticsInitProvider.isCrashlyticsCollectionEnabled()) {
       recordJavaScriptError(jsErrorMap);
+    } else {
+      System.err.println("isCrashlyticsCollectionEnabled is false. Crashlytics will not receive a report.");
     }
   }
 
@@ -148,11 +165,13 @@ public class ReactNativeFirebaseCrashlyticsModule extends ReactNativeFirebaseMod
   public void recordErrorPromise(ReadableMap jsErrorMap, Promise promise) {
     if (ReactNativeFirebaseCrashlyticsInitProvider.isCrashlyticsCollectionEnabled()) {
       recordJavaScriptError(jsErrorMap);
+    } else {
+      System.err.println("isCrashlyticsCollectionEnabled is false. Crashlytics will not receive a report.");
     }
     promise.resolve(null);
   }
 
-  private void recordJavaScriptError(ReadableMap jsErrorMap) {
+  private Exception recordJavaScriptError(ReadableMap jsErrorMap) {
     String message = jsErrorMap.getString("message");
     ReadableArray stackFrames = Objects.requireNonNull(jsErrorMap.getArray("frames"));
     boolean isUnhandledPromiseRejection = jsErrorMap.getBoolean("isUnhandledRejection");
@@ -176,6 +195,7 @@ public class ReactNativeFirebaseCrashlyticsModule extends ReactNativeFirebaseMod
     customException.setStackTrace(stackTraceElements);
 
     FirebaseCrashlytics.getInstance().recordException(customException);
+    return customException;
   }
 
   @Override
@@ -188,6 +208,10 @@ public class ReactNativeFirebaseCrashlyticsModule extends ReactNativeFirebaseMod
     constants.put(
       "isErrorGenerationOnJSCrashEnabled",
       ReactNativeFirebaseCrashlyticsInitProvider.isErrorGenerationOnJSCrashEnabled()
+    );
+    constants.put(
+      "isCrashlyticsJavascriptExceptionHandlerChainingEnabled",
+      ReactNativeFirebaseCrashlyticsInitProvider.isCrashlyticsJavascriptExceptionHandlerChainingEnabled()
     );
     return constants;
   }

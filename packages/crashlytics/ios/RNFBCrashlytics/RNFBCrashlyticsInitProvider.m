@@ -26,11 +26,12 @@
 NSString *const KEY_CRASHLYTICS_DEBUG_ENABLED = @"crashlytics_debug_enabled";
 NSString *const KEY_CRASHLYTICS_AUTO_COLLECTION_ENABLED = @"crashlytics_auto_collection_enabled";
 NSString *const KEY_CRASHLYTICS_IS_ERROR_GENERATION_ON_JS_CRASH_ENABLED = @"crashlytics_is_error_generation_on_js_crash_enabled";
+NSString *const KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED = @"crashlytics_javascript_exception_handler_chaining_enabled";
 
 @implementation RNFBCrashlyticsInitProvider
 
 + (void)load {
-  [FIRApp registerInternalLibrary:self withName:@"react-native-firebase-crashlytics" withVersion:@"6.0.0"];
+  [FIRApp registerInternalLibrary:self withName:@"react-native-firebase-crashlytics" withVersion:@"11.3.0"];
 }
 
 + (BOOL)isCrashlyticsCollectionEnabled {
@@ -76,6 +77,26 @@ NSString *const KEY_CRASHLYTICS_IS_ERROR_GENERATION_ON_JS_CRASH_ENABLED = @"cras
   }
 
   DLog(@"isErrorGenerationOnJSCrashEnabled: %d", enabled);
+
+  return enabled;
+}
+
++ (BOOL)isCrashlyticsJavascriptExceptionHandlerChainingEnabled {
+  BOOL enabled;
+
+  if ([[RNFBPreferences shared] contains:KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED]) {
+    enabled = [[RNFBPreferences shared] getBooleanValue:KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED defaultValue:YES];
+    DLog(@"isCrashlyticsJavascriptExceptionHandlerChainingEnabled via RNFBPreferences: %d", enabled);
+  } else if ([[RNFBJSON shared] contains:KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED]) {
+    enabled = [[RNFBJSON shared] getBooleanValue:KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED defaultValue:YES];
+    DLog(@"isCrashlyticsJavascriptExceptionHandlerChainingEnabled via RNFBJSON: %d", enabled);
+  } else {
+    // Note that if we're here, and the key is not set on the app's bundle, we default to "YES"
+    enabled = [RNFBMeta getBooleanValue:KEY_CRASHLYTICS_JAVASCRIPT_EXCEPTION_HANDLER_CHAINING_ENABLED defaultValue:YES];
+    DLog(@"isCrashlyticsJavascriptExceptionHandlerChainingEnabled via RNFBMeta: %d", enabled);
+  }
+
+  DLog(@"isCrashlyticsJavascriptExceptionHandlerChainingEnabled: %d", enabled);
 
   return enabled;
 }
